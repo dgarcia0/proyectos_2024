@@ -76,5 +76,39 @@ namespace PreguntasYRespuestas.Data
             }
             throw new NotImplementedException();
         }
+
+        void IDataRepository.DeleteQuestion(int questionId)
+        {
+            throw new NotImplementedException();
+        }
+
+        AnswerGetResponse IDataRepository.PostAnswer(AnswerPostRequest answer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public QuestionGetSingleResponse PostQuestion(QuestionPostRequest question)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var questionId = connection.QueryFirst<int>(@"EXEC dbo.Question_Post @Title = @Title
+                @Content = @Content, @UserId = @UserId, UserName = @UserName, @Created = @Created", question);
+                return GetQuestion(questionId);
+            }
+            throw new NotImplementedException();
+        }
+
+        public QuestionGetSingleResponse PutQuestion(int questionId, QuestionPutRequest question)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                connection.Execute(@"EXEC dbo.Question_Put @QuestionId = @QuestionId, @Title = @Title, @Content = @Content",
+                new { QuestionId = questionId, question.Title, question.Content });
+                return GetQuestion(questionId);
+            }
+            throw new NotImplementedException();
+        }
     }
 }

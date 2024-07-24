@@ -10,5 +10,9 @@ namespace PreguntasYRespuestas.Data
         QuestionGetSingleResponse GetQuestion(int questionId);
         bool QuestionExists(int questionId);
         AnswerGetResponse GetAnswer(int answerId);
+        QuestionGetSingleResponse PostQuestion(QuestionPostRequest question);
+        void DeleteQuestion(int questionId);
+        QuestionGetSingleResponse PutQuestion(int questionId, QuestionPutRequest question);
+        AnswerGetResponse PostAnswer(AnswerPostRequest answer);
     }
 }
