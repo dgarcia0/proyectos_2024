@@ -77,13 +77,24 @@ namespace PreguntasYRespuestas.Data
             throw new NotImplementedException();
         }
 
-        void IDataRepository.DeleteQuestion(int questionId)
+        public void DeleteQuestion(int questionId)
         {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                connection.Execute(@"EXEC dbo.Question_Delete @QuestionId = @QuestionId", new { QuestionId = questionId });
+            }
             throw new NotImplementedException();
         }
 
-        AnswerGetResponse IDataRepository.PostAnswer(AnswerPostRequest answer)
+        public AnswerGetResponse PostAnswer(AnswerPostRequest answer)
         {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                return connection.QueryFirst<AnswerGetResponse>(@"EXEC dbo.Answer_Post @QuestionId = @QuestionId
+                @Content = @Content, @UserId = @UserId, UserName = @UserName, @Created = @Created", answer);
+            }
             throw new NotImplementedException();
         }
 

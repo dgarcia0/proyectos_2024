@@ -1,7 +1,20 @@
+using DbUp;
+using System.Reflection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddControllers();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+EnsureDatabase.For.SqlDatabase(connectionString);
+var upgrader = DeployChanges.To.SqlDatabase(connectionString, null)
+    .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly()).WithTransaction().Build();
+if (upgrader.IsUpgradeRequired())
+{
+    upgrader.PerformUpgrade();
+}
 
 var app = builder.Build();
 
