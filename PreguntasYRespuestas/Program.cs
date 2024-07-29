@@ -1,11 +1,13 @@
 using DbUp;
 using System.Reflection;
+using PreguntasYRespuestas.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
+builder.Services.AddScoped<IDataRepository, DataRepository>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 EnsureDatabase.For.SqlDatabase(connectionString);
