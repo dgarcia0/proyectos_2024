@@ -1,11 +1,13 @@
-﻿namespace PreguntasYRespuestas.Data.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PreguntasYRespuestas.Data.Models
 {
     public class QuestionPostRequest
     {
+        [Required]
+        [StringLength(100)]
         public string Title { get; set; }
+        [Required(ErrorMessage = "Content is empty")]
         public string Content { get; set; }
-        public string UserId { get; set; }
-        public string UserName { get; set; }
-        public DateTime Created { get; set; }
     }
 }

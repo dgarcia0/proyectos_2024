@@ -87,7 +87,7 @@ namespace PreguntasYRespuestas.Data
             throw new NotImplementedException();
         }
 
-        public AnswerGetResponse PostAnswer(AnswerPostRequest answer)
+        public AnswerGetResponse PostAnswer(AnswerPostFullRequest answer)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
@@ -98,7 +98,7 @@ namespace PreguntasYRespuestas.Data
             throw new NotImplementedException();
         }
 
-        public QuestionGetSingleResponse PostQuestion(QuestionPostRequest question)
+        public QuestionGetSingleResponse PostQuestion(QuestionPostFullRequest question)
         {
             using (var connection = new SqlConnection(_connectionString))
             {
