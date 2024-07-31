@@ -9,6 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 builder.Services.AddScoped<IDataRepository, DataRepository>();
+
+builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder.AllowAnyMethod()
+.AllowAnyHeader().WithOrigins("http://localhost:3000").AllowCredentials()));
+
 builder.Services.AddSignalR();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -40,5 +44,7 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 app.MapHub<QuestionsHub>("/questionshub");
+
+app.UseCors("CorsPolicy");
 
 app.Run();
