@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PreguntasYRespuestas.Data;
 using PreguntasYRespuestas.Data.Models;
+using Microsoft.AspNetCore.SignalR;
+using PreguntasYRespuestas.Hubs;
 
 namespace PreguntasYRespuestas.Controllers
 {
@@ -10,9 +12,12 @@ namespace PreguntasYRespuestas.Controllers
     public class QuestionsController : ControllerBase
     {
         private readonly IDataRepository _dataRepository;
+        private readonly IHubContext<QuestionsHub> _questionHubContext;
 
-        public QuestionsController(IDataRepository dataRepository) {
+        public QuestionsController(IDataRepository dataRepository, IHubContext<QuestionsHub> questionHubContext)
+        {
             _dataRepository = dataRepository;
+            _questionHubContext = questionHubContext;
         }
 
         [HttpGet]
@@ -96,7 +101,7 @@ namespace PreguntasYRespuestas.Controllers
             {
                 return NotFound();
             }
-            var saveAnswer = _dataRepository.PostAnswer(new AnswerPostFullRequest
+            var savedAnswer = _dataRepository.PostAnswer(new AnswerPostFullRequest
             {
                 QuestionId = answerPostRequest.QuestionId.Value,
                 Content = answerPostRequest.Content,
@@ -104,7 +109,11 @@ namespace PreguntasYRespuestas.Controllers
                 UserName = "test",
                 Created = DateTime.UtcNow
             });
-            return saveAnswer;
+
+            _questionHubContext.Clients.Group($"Question-{answerPostRequest.QuestionId.Value}")
+                .SendAsync("ReceiveQuestion", _dataRepository.GetQuestion(answerPostRequest.QuestionId.Value));
+
+            return savedAnswer;
         }
     }
 }

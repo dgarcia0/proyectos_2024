@@ -1,6 +1,7 @@
 using DbUp;
 using System.Reflection;
 using PreguntasYRespuestas.Data;
+using PreguntasYRespuestas.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 builder.Services.AddScoped<IDataRepository, DataRepository>();
+builder.Services.AddSignalR();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 EnsureDatabase.For.SqlDatabase(connectionString);
@@ -36,5 +38,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+app.MapHub<QuestionsHub>("/questionshub");
 
 app.Run();
