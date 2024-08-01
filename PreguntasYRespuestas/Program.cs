@@ -14,6 +14,8 @@ builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", builder => b
 .AllowAnyHeader().WithOrigins("http://localhost:3000").AllowCredentials()));
 
 builder.Services.AddSignalR();
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IQuestionCache, QuestionCache>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 EnsureDatabase.For.SqlDatabase(connectionString);

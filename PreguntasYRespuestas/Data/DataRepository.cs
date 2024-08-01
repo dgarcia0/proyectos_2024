@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using PreguntasYRespuestas.Data.Models;
+using static Dapper.SqlMapper;
 
 namespace PreguntasYRespuestas.Data
 {
@@ -28,11 +29,21 @@ namespace PreguntasYRespuestas.Data
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                var question =  connection.QueryFirstOrDefault<QuestionGetSingleResponse>(@"EXEC dbo.Question_GetSingle @QuestionId = @QuestionId", new { QuestionId = questionId});
+                using (GridReader results = connection.QueryMultiple(@"EXEC dbo.Question_GetSingle @QuestionId = @QuestionId;
+                EXEC dbo.Answer_Get_ByQuestionId @QuestionId = @QuestionId", new { QuestionId = questionId }))
+                {
+                    var question = results.Read<QuestionGetSingleResponse>().FirstOrDefault();
+                    if (question != null)
+                    {
+                        question.Answers = results.Read<AnswerGetResponse>().ToList();
+                    }
+                    return question;
+                }
+                /*var question =  connection.QueryFirstOrDefault<QuestionGetSingleResponse>(@"EXEC dbo.Question_GetSingle @QuestionId = @QuestionId", new { QuestionId = questionId});
                 if (question != null) {
                     question.Answers = connection.Query<AnswerGetResponse>(@"EXEC dbo.Answer_Get_ByQuestionId @QuestionId = @QuestionId", new { QuestionId = questionId });
                 }
-                return question;
+                return question;*/
             }
             throw new NotImplementedException();
         }
@@ -47,6 +58,37 @@ namespace PreguntasYRespuestas.Data
             throw new NotImplementedException();
         }
 
+        public IEnumerable<QuestionGetManyResponse> GetQuestionsWithAnswers()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var questionDictionary = new Dictionary<int, QuestionGetManyResponse>();
+                return connection.Query<QuestionGetManyResponse, AnswerGetResponse, QuestionGetManyResponse>
+                    ("EXEC dbo.Question_GetMany_WithAnswers", map: (q,a) =>
+                    {
+                        QuestionGetManyResponse question;
+                        if(!questionDictionary.TryGetValue(q.QuestionId, out question))
+                        {
+                            question = q;
+                            question.Answers = new List<AnswerGetResponse>();
+                            questionDictionary.Add(question.QuestionId, question);
+                        }
+                        question.Answers.Add(a);
+                        return question;
+                    }, splitOn: "QuestionId").Distinct().ToList();
+                //return connection.Query<QuestionGetManyResponse>("EXEC dbo.Question_GetMany_WithAnswers");
+                /*var questions = connection.Query<QuestionGetManyResponse>(@"EXEC dbo.Question_GetMany");
+                foreach (var item in questions)
+                {
+                    item.Answers = connection.Query<AnswerGetResponse>(@"EXEC dbo.Answer_Get_ByQuestionId @QuestionId = @QuestionId",
+                        new{ QuestionId = item.QuestionId } ).ToList();
+                }
+                return questions;*/
+            }
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<QuestionGetManyResponse> GetQuestionsBySearch(string search)
         {
             using (var connection = new SqlConnection(_connectionString))
@@ -57,6 +99,17 @@ namespace PreguntasYRespuestas.Data
             throw new NotImplementedException();
         }
 
+        public IEnumerable<QuestionGetManyResponse> GetQuestionsBySearchWithPaging(string search, int pageNumber, int pageSize)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var parameters = new { Search = search, PageNumber =pageNumber, PageSize = pageSize };
+                return connection.Query<QuestionGetManyResponse>(@"EXEC dbo.Question_GetMany_BySearch_WithPaging @Search = @Search
+                @PageNumber = @PageNumber, PageSize = @PageSize", parameters);
+            }
+        }
+
         public IEnumerable<QuestionGetManyResponse> GetUnanwseredQuestions()
         {
             using (var connection = new SqlConnection(_connectionString))
@@ -65,6 +118,15 @@ namespace PreguntasYRespuestas.Data
                 return connection.Query<QuestionGetManyResponse>(@"EXEC dbo.Question_GetUnanswered");
             }
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<QuestionGetManyResponse>> GetUnanwseredQuestionsAsync()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                return await connection.QueryAsync<QuestionGetManyResponse>("EXEC dbo.Question_GetUnanswered");
+            }
         }
 
         public bool QuestionExists(int questionId)
