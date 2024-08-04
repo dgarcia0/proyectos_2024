@@ -42,3 +42,8 @@ health-check/wwwroot/lib/
 health-check/obj/Debug/
 health-check/bin/Debug/
 health-check/.vs/
+WorldCities/.vs/
+WorldCities/bin/Debug/
+WorldCities/obj/Debug/
+WorldCities/wwwroot/lib/
+WorldCities/obj/
