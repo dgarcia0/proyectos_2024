@@ -24,7 +24,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseHealthChecks("/hc");
+app.UseHealthChecks("/hc", new CustomHealthCheckOptions());
 
 app.UseAuthorization();
 
