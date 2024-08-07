@@ -31,7 +31,12 @@ namespace WorldCities.Controllers
         public async Task<ActionResult<ApiResult<Country>>> GetCountries(int pageIndex = 0, int pageSize = 10)
         {
             //return await _context.Countries.ToListAsync();
-            return await ApiResult<Country>.CreateAsync(_context.Countries, pageIndex, pageSize);
+            return await ApiResult<Country>.CreateAsync(_context.Countries.Select(c => new Country()
+            {
+                Id = c.Id,
+                Name = c.Name,
+                TotCities = c.Cities.Count
+            }), pageIndex, pageSize);
         }
 
         // GET: api/Countries/5
